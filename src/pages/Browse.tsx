@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import Navbar from "@/components/Navbar";
-import ContentCard from "@/components/ContentCard";
+import Navbar from "@/components/layout/Navbar";
+import ContentCard from "@/components/content/ContentCard";
 import { contentData } from "@/data/content";
 import { Search, SlidersHorizontal } from "lucide-react";
 

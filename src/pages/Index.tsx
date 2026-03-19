@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
-import Navbar from "@/components/Navbar";
-import HeroBanner from "@/components/HeroBanner";
-import ContentSection from "@/components/ContentSection";
-import ContentCard from "@/components/ContentCard";
+import Navbar from "@/components/layout/Navbar";
+import HeroBanner from "@/components/content/HeroBanner";
+import ContentSection from "@/components/content/ContentSection";
+import ContentCard from "@/components/content/ContentCard";
 import { contentData } from "@/data/content";
 
 const Home = () => {

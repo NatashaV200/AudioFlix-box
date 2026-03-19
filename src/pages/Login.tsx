@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {

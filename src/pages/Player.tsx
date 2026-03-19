@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import { contentData } from "@/data/content";
 import { ArrowLeft, Headphones, Star, Clock, Tag } from "lucide-react";
 
