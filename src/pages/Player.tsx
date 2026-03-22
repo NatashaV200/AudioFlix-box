@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
+import SoundwaveReaction from "@/components/SoundwaveReaction";
 import { contentData } from "@/data/content";
-import { ArrowLeft, Headphones, Star, Clock, Tag } from "lucide-react";
+import { ArrowLeft, Star, Clock, Tag } from "lucide-react";
 
 const Player = () => {
   const { id } = useParams<{ id: string }>();
   const item = contentData.find((c) => c.id === id);
+  const [hasReacted, setHasReacted] = useState(false);
 
   if (!item) {
     return (
