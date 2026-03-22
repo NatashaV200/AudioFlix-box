@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Background -->
+  <rect width="256" height="256" fill="#0f0f23"/>
+  
+  <!-- Soundwave bars -->
+  <rect x="40" y="140" width="16" height="60" rx="8" fill="#ec4899"/>
+  <rect x="70" y="110" width="16" height="120" rx="8" fill="#a855f7"/>
+  <rect x="100" y="80" width="16" height="180" rx="8" fill="#ec4899"/>
+  <rect x="130" y="100" width="16" height="140" rx="8" fill="#a855f7"/>
+  <rect x="160" y="120" width="16" height="100" rx="8" fill="#ec4899"/>
+  <rect x="190" y="140" width="16" height="60" rx="8" fill="#a855f7"/>
+  
+  <!-- Play symbol -->
+  <path d="M 85 65 L 110 80 L 85 95 Z" fill="#ffffff" opacity="0.9"/>
+</svg>

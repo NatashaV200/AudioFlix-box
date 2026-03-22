@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ContentItem } from "@/data/content";
+import SoundwaveReaction from "@/components/SoundwaveReaction";
 import { Play, Headphones, Star } from "lucide-react";
 
 interface ContentCardProps {
@@ -9,6 +11,7 @@ interface ContentCardProps {
 
 const ContentCard = ({ item, variant = "poster" }: ContentCardProps) => {
   const navigate = useNavigate();
+  const [hasReacted, setHasReacted] = useState(false);
 
   if (variant === "wide") {
     return (
@@ -40,6 +43,13 @@ const ContentCard = ({ item, variant = "poster" }: ContentCardProps) => {
                 <Play className="w-5 h-5 text-primary-foreground fill-current ml-0.5" />
               )}
             </div>
+          </div>
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <SoundwaveReaction 
+              size="sm" 
+              isReacted={hasReacted}
+              onReact={() => setHasReacted(!hasReacted)}
+            />
           </div>
         </div>
       </button>
@@ -82,11 +92,16 @@ const ContentCard = ({ item, variant = "poster" }: ContentCardProps) => {
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between">
           <div className="flex items-center gap-1.5 text-[10px] text-foreground/80">
             {item.year && <span>{item.year}</span>}
             {item.duration && <span>• {item.duration}</span>}
           </div>
+          <SoundwaveReaction 
+            size="sm" 
+            isReacted={hasReacted}
+            onReact={() => setHasReacted(!hasReacted)}
+          />
         </div>
       </div>
       <p className="mt-2 text-xs font-semibold text-foreground truncate text-left">{item.title}</p>

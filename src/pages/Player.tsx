@@ -111,6 +111,16 @@ const Player = () => {
               </span>
             )}
           </div>
+
+          {/* Soundwave Reaction */}
+          <div className="flex items-center gap-4 mt-8 pt-6 border-t border-border/40">
+            <span className="text-sm font-semibold text-foreground">How did you enjoy this?</span>
+            <SoundwaveReaction 
+              size="md" 
+              isReacted={hasReacted}
+              onReact={() => setHasReacted(!hasReacted)}
+            />
+          </div>
         </div>
       </main>
     </div>
