@@ -2,13 +2,39 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import SoundwaveReaction from "@/components/SoundwaveReaction";
+import CoListeningRoom from "@/components/CoListening/CoListeningRoom";
 import { contentData } from "@/data/content";
 import { ArrowLeft, Star, Clock, Tag } from "lucide-react";
+
+interface CoListener {
+  id: string;
+  name: string;
+  avatar: string;
+  color: string;
+}
 
 const Player = () => {
   const { id } = useParams<{ id: string }>();
   const item = contentData.find((c) => c.id === id);
   const [hasReacted, setHasReacted] = useState(false);
+  const [coListeners, setCoListeners] = useState<CoListener[]>([
+    { id: "user-2", name: "Alex", avatar: "🎵", color: "#ec4899" },
+    { id: "user-3", name: "Jordan", avatar: "🎧", color: "#a855f7" },
+  ]);
+  const [roomId] = useState(`listen-${id}-${Date.now()}`);
+
+  const handleInvite = () => {
+    navigator.clipboard.writeText(`Join me listening on AudioFlix! ${window.location.href}`);
+    alert("Invite link copied to clipboard!");
+  };
+
+  const handleReaction = (emoji: string) => {
+    console.log(`User reacted with ${emoji}`);
+  };
+
+  const handleLeaveRoom = () => {
+    setCoListeners([]);
+  };
 
   if (!item) {
     return (
@@ -121,6 +147,16 @@ const Player = () => {
               onReact={() => setHasReacted(!hasReacted)}
             />
           </div>
+
+          {/* Co-Listening Sessions */}
+          <CoListeningRoom
+            roomId={roomId}
+            listeners={coListeners}
+            currentUserId="user-1"
+            onReact={handleReaction}
+            onInvite={handleInvite}
+            onLeave={handleLeaveRoom}
+          />
         </div>
       </main>
     </div>

@@ -3,6 +3,7 @@ import Index from "./pages/Index.tsx";
 import Browse from "./pages/Browse.tsx";
 import Player from "./pages/Player.tsx";
 import Login from "./pages/Login.tsx";
+import Profile from "./pages/Profile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const App = () => (
@@ -11,6 +12,7 @@ const App = () => (
       <Route path="/" element={<Index />} />
       <Route path="/browse" element={<Browse />} />
       <Route path="/player/:id" element={<Player />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
