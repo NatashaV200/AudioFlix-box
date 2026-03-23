@@ -146,6 +146,7 @@ const WaveformVisualizer = ({ audioRef, isPlaying, audioEnergy }: WaveformVisual
 
       // Draw real-time visualizer bars on top
       if (isPlaying && analyserRef.current && dataArrayRef.current) {
+        // @ts-expect-error - Uint8Array ArrayBuffer variance issue
         analyserRef.current.getByteFrequencyData(dataArrayRef.current);
 
         const barWidth = width / VISUALIZER_BARS;
@@ -235,7 +236,7 @@ const WaveformVisualizer = ({ audioRef, isPlaying, audioEnergy }: WaveformVisual
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isPlaying, currentTime, duration, isHoveringWaveform, hoverX, audioEnergy]);
+  }, [audioRef, isPlaying, currentTime, duration, isHoveringWaveform, hoverX, audioEnergy]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
