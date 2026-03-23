@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
+import WaveformVisualizer from "@/components/content/WaveformVisualizer";
 import SoundwaveReaction from "@/components/SoundwaveReaction";
 import CoListeningRoom from "@/components/CoListening/CoListeningRoom";
 import { contentData } from "@/data/content";
@@ -224,7 +225,41 @@ const Player = () => {
                 <span>{isPlaying ? "Immersive mode active" : "Press play for living album art"}</span>
               </div>
 
-              <audio ref={audioRef} controls className="relative w-full max-w-lg" src={item.src}>
+              <div className="relative w-full max-w-lg space-y-3">
+                <WaveformVisualizer
+                  audioRef={audioRef}
+                  isPlaying={isPlaying}
+                  audioEnergy={audioEnergy}
+                />
+                <div className="flex items-center justify-center gap-3 px-2">
+                  <button
+                    onClick={() => {
+                      const audio = audioRef.current;
+                      if (audio) {
+                        if (isPlaying) {
+                          audio.pause();
+                        } else {
+                          audio.play();
+                        }
+                      }
+                    }}
+                    className="w-12 h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center glow-primary"
+                  >
+                    {isPlaying ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    )}
+                  </button>
+                  <span className="text-xs font-medium text-muted-foreground">Click waveform to seek</span>
+                </div>
+              </div>
+
+              <audio ref={audioRef} className="hidden" src={item.src}>
                 Your browser does not support audio playback.
               </audio>
             </div>

@@ -196,3 +196,16 @@
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
+
+.waveform-canvas {
+  background: hsl(225 12% 10% / 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid hsl(225 10% 16% / 0.5);
+  display: block;
+  image-rendering: crisp-edges;
+}
+
+.waveform-canvas:hover {
+  background: hsl(225 12% 10% / 0.8);
+  border-color: hsl(348 83% 55% / 0.3);
+}
