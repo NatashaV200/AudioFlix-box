@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import SoundwaveReaction from "@/components/SoundwaveReaction";
 import CoListeningRoom from "@/components/CoListening/CoListeningRoom";
 import { contentData } from "@/data/content";
-import { ArrowLeft, Star, Clock, Tag } from "lucide-react";
+import { ArrowLeft, Star, Clock, Tag, Headphones } from "lucide-react";
 
 interface CoListener {
   id: string;
@@ -16,12 +16,123 @@ interface CoListener {
 const Player = () => {
   const { id } = useParams<{ id: string }>();
   const item = contentData.find((c) => c.id === id);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const frameRef = useRef<number | null>(null);
   const [hasReacted, setHasReacted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioEnergy, setAudioEnergy] = useState(0.12);
   const [coListeners, setCoListeners] = useState<CoListener[]>([
     { id: "user-2", name: "Alex", avatar: "🎵", color: "#ec4899" },
     { id: "user-3", name: "Jordan", avatar: "🎧", color: "#a855f7" },
   ]);
   const [roomId] = useState(`listen-${id}-${Date.now()}`);
+
+  useEffect(() => {
+    if (!item || item.type !== "audio") {
+      return;
+    }
+
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    const stopEnergyLoop = () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
+      setAudioEnergy(0.12);
+    };
+
+    const tick = () => {
+      const analyser = analyserRef.current;
+      const dataArray = dataArrayRef.current;
+
+      if (!analyser || !dataArray) {
+        return;
+      }
+
+      analyser.getByteFrequencyData(dataArray);
+      const average = dataArray.reduce((acc, value) => acc + value, 0) / dataArray.length;
+      const normalized = average / 255;
+
+      setAudioEnergy((prev) => prev * 0.82 + normalized * 0.18);
+      frameRef.current = requestAnimationFrame(tick);
+    };
+
+    const setupAnalyzer = async () => {
+      try {
+        if (!audioContextRef.current) {
+          audioContextRef.current = new window.AudioContext();
+        }
+
+        if (audioContextRef.current.state === "suspended") {
+          await audioContextRef.current.resume();
+        }
+
+        if (!sourceRef.current) {
+          sourceRef.current = audioContextRef.current.createMediaElementSource(audio);
+        }
+
+        if (!analyserRef.current) {
+          const analyser = audioContextRef.current.createAnalyser();
+          analyser.fftSize = 256;
+          sourceRef.current.connect(analyser);
+          analyser.connect(audioContextRef.current.destination);
+          analyserRef.current = analyser;
+          dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+        }
+
+        if (!frameRef.current) {
+          frameRef.current = requestAnimationFrame(tick);
+        }
+      } catch {
+        setAudioEnergy(0.22);
+      }
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+      setupAnalyzer();
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+      stopEnergyLoop();
+    };
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      stopEnergyLoop();
+    };
+
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("ended", handleEnded);
+      stopEnergyLoop();
+    };
+  }, [item]);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
 
   const handleInvite = () => {
     navigator.clipboard.writeText(`Join me listening on AudioFlix! ${window.location.href}`);
@@ -84,18 +195,36 @@ const Player = () => {
               Your browser does not support video playback.
             </video>
           ) : (
-            <div className="relative flex flex-col items-center justify-center py-20 gap-8">
+            <div className={`relative flex flex-col items-center justify-center py-20 gap-8 audio-hero-stage ${isPlaying ? "is-playing" : ""}`}>
               <div className="absolute inset-0 opacity-20">
                 <img src={item.thumbnail} alt="" className="w-full h-full object-cover blur-3xl" />
               </div>
-              <div className="relative">
+
+              <div
+                className="audio-ambient-glow"
+                aria-hidden="true"
+                style={{
+                  opacity: 0.22 + Math.min(audioEnergy, 0.8) * 0.55,
+                  transform: `translate(-50%, -50%) scale(${1 + audioEnergy * 0.16})`,
+                }}
+              />
+
+              <div className="relative audio-cover-stage">
+                <div className="audio-vinyl-disc" aria-hidden="true" />
                 <img
                   src={item.thumbnail}
                   alt={item.title}
-                  className="w-48 h-48 md:w-56 md:h-56 rounded-2xl object-cover shadow-2xl shadow-primary/20"
+                  className="audio-cover-art w-48 h-48 md:w-56 md:h-56 rounded-2xl object-cover shadow-2xl shadow-primary/20"
+                  style={{ transform: `translateZ(0) scale(${1 + audioEnergy * 0.03})` }}
                 />
               </div>
-              <audio controls className="relative w-full max-w-lg" src={item.src}>
+
+              <div className="relative inline-flex items-center gap-2 text-sm text-muted-foreground bg-secondary/30 border border-border/40 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <Headphones className="w-4 h-4" />
+                <span>{isPlaying ? "Immersive mode active" : "Press play for living album art"}</span>
+              </div>
+
+              <audio ref={audioRef} controls className="relative w-full max-w-lg" src={item.src}>
                 Your browser does not support audio playback.
               </audio>
             </div>

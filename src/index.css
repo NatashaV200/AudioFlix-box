@@ -114,4 +114,85 @@
     );
     pointer-events: none;
   }
+
+  .audio-hero-stage {
+    isolation: isolate;
+  }
+
+  .audio-cover-stage {
+    position: relative;
+    z-index: 2;
+    transform-style: preserve-3d;
+  }
+
+  .audio-cover-art {
+    position: relative;
+    z-index: 3;
+    transition: transform 220ms linear;
+    box-shadow:
+      0 20px 60px hsl(var(--background) / 0.45),
+      0 0 0 1px hsl(0 0% 100% / 0.08) inset;
+  }
+
+  .audio-vinyl-disc {
+    position: absolute;
+    width: 125%;
+    height: 125%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at center, hsl(0 0% 100% / 0.22) 0 6%, hsl(0 0% 100% / 0) 7%),
+      repeating-radial-gradient(circle at center, hsl(0 0% 100% / 0.075) 0 1px, hsl(0 0% 100% / 0.01) 2px 7px),
+      radial-gradient(circle at center, hsl(220 10% 24% / 0.95), hsl(225 14% 8% / 0.95));
+    z-index: 1;
+    opacity: 0.35;
+    filter: blur(0.2px);
+  }
+
+  .audio-ambient-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(72vw, 580px);
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at 30% 30%, hsl(var(--accent) / 0.35), transparent 45%),
+      radial-gradient(circle at 65% 70%, hsl(var(--primary) / 0.38), transparent 55%),
+      radial-gradient(circle at center, hsl(0 0% 100% / 0.1), transparent 60%);
+    filter: blur(22px) saturate(1.15);
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 220ms ease, transform 220ms ease;
+  }
+
+  .audio-hero-stage.is-playing .audio-cover-art {
+    animation: albumPulse 4.8s ease-in-out infinite;
+  }
+
+  .audio-hero-stage.is-playing .audio-vinyl-disc {
+    animation: vinylSpin 14s linear infinite;
+    opacity: 0.55;
+  }
+}
+
+@keyframes albumPulse {
+  0%,
+  100% {
+    transform: translateZ(0) scale(1);
+  }
+  50% {
+    transform: translateZ(0) scale(1.025);
+  }
+}
+
+@keyframes vinylSpin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
