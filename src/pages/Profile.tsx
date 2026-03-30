@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
+import Sidebar from "@/components/layout/Sidebar";
 import { contentData } from "@/data/content";
 import { Sparkles, Music2 } from "lucide-react";
 
@@ -74,7 +75,8 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="pt-20 pb-12 max-w-6xl mx-auto px-4 lg:px-8">
+      <Sidebar />
+      <main className="pt-20 pb-12 max-w-6xl mx-auto px-4 lg:px-8 md:pl-24">
         <header className="rounded-2xl border border-border/50 bg-card p-6 md:p-8 card-shine">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">

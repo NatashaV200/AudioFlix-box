@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
+import Sidebar from "@/components/layout/Sidebar";
 import WaveformVisualizer from "@/components/content/WaveformVisualizer";
 import SoundwaveReaction from "@/components/SoundwaveReaction";
 import CoListeningRoom from "@/components/CoListening/CoListeningRoom";
@@ -175,7 +176,8 @@ const Player = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="pt-20 pb-12 max-w-5xl mx-auto px-4">
+      <Sidebar />
+      <main className="pt-20 pb-12 max-w-5xl mx-auto px-4 md:pl-24">
         <Link
           to="/browse"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
+import Sidebar from "@/components/layout/Sidebar";
 import HeroBanner from "@/components/content/HeroBanner";
 import ContentSection from "@/components/content/ContentSection";
 import ContentCard from "@/components/content/ContentCard";
@@ -29,9 +30,10 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar onSearchChange={setSearch} showSearch searchValue={search} />
+      <Sidebar />
 
       {filtered ? (
-        <div className="pt-20 pb-12 max-w-[1440px] mx-auto px-4 lg:px-8">
+        <div className="pt-20 pb-12 max-w-[1440px] mx-auto px-4 lg:px-8 md:pl-24">
           <h2 className="text-2xl font-display font-bold text-foreground mb-6">
             Results for &ldquo;{search}&rdquo;
           </h2>
@@ -46,7 +48,7 @@ const Home = () => {
           )}
         </div>
       ) : (
-        <>
+        <div className="md:pl-24">
           <HeroBanner item={featured} />
           <div className="-mt-20 relative z-10">
             <ContentSection title="🔥 Trending Now" items={trending} />
@@ -55,7 +57,7 @@ const Home = () => {
             <ContentSection title="🎧 Audiobooks" items={audiobooks} />
             <ContentSection title="🎬 Popular Videos" items={popularVideos} variant="wide" />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

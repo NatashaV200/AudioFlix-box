@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
+import Sidebar from "@/components/layout/Sidebar";
 import ContentCard from "@/components/content/ContentCard";
 import { contentData } from "@/data/content";
 import { Search, SlidersHorizontal } from "lucide-react";
@@ -27,7 +28,8 @@ const Browse = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="pt-20 pb-12 max-w-[1440px] mx-auto px-4 lg:px-8">
+      <Sidebar />
+      <main className="pt-20 pb-12 max-w-[1440px] mx-auto px-4 lg:px-8 md:pl-24">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
             Browse
