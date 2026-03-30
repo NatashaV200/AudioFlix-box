@@ -4,6 +4,7 @@ import Browse from "./pages/Browse.tsx";
 import Search from "./pages/Search.tsx";
 import Player from "./pages/Player.tsx";
 import BookDetail from "./pages/BookDetail.tsx";
+import Downloads from "./pages/Downloads.tsx";
 import Login from "./pages/Login.tsx";
 import Profile from "./pages/Profile.tsx";
 import SidebarPlaceholder from "./pages/SidebarPlaceholder.tsx";
@@ -18,6 +19,7 @@ const App = () => (
       <Route path="/search" element={<Search />} />
       <Route path="/explore" element={<Search />} />
       <Route path="/library" element={<Library />} />
+      <Route path="/downloads" element={<Downloads />} />
       <Route path="/wishlist" element={<Library initialTab="wishlist" />} />
       <Route
         path="/history"

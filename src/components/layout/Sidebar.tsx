@@ -5,6 +5,7 @@ import {
   ChevronRight,
   House,
   Library,
+  Download,
   Compass,
   Heart,
   History,
@@ -14,6 +15,7 @@ import {
 const navItems = [
   { to: "/", label: "Home", icon: House },
   { to: "/library", label: "Library", icon: Library },
+  { to: "/downloads", label: "Downloads", icon: Download },
   { to: "/explore", label: "Explore", icon: Compass },
   { to: "/wishlist", label: "Wishlist", icon: Heart },
   { to: "/history", label: "Listening History", icon: History },

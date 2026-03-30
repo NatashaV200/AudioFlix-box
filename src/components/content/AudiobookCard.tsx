@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Play, Star } from "lucide-react";
+import { Play, Star, CheckCircle2 } from "lucide-react";
 import { ContentItem } from "@/data/content";
 
 interface AudiobookCardProps {
@@ -9,6 +10,26 @@ interface AudiobookCardProps {
 const AudiobookCard = ({ item }: AudiobookCardProps) => {
   const navigate = useNavigate();
   const author = item.author ?? "AudioFlix Narrator";
+  const [isDownloaded, setIsDownloaded] = useState(false);
+
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("audioflix-downloaded-ids") ?? "[]") as string[];
+        setIsDownloaded(stored.includes(item.id));
+      } catch {
+        setIsDownloaded(false);
+      }
+    };
+
+    sync();
+    window.addEventListener("audioflix-downloads-updated", sync as EventListener);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("audioflix-downloads-updated", sync as EventListener);
+      window.removeEventListener("storage", sync);
+    };
+  }, [item.id]);
 
   return (
     <button
@@ -29,6 +50,13 @@ const AudiobookCard = ({ item }: AudiobookCardProps) => {
           <div className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-background/75 px-1.5 py-0.5 backdrop-blur-sm">
             <Star className="w-3 h-3 text-gold fill-current" />
             <span className="text-[10px] font-semibold text-foreground">{item.rating}</span>
+          </div>
+        )}
+
+        {isDownloaded && (
+          <div className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-md bg-success/20 text-success px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-sm">
+            <CheckCircle2 className="w-3 h-3" />
+            Saved
           </div>
         )}
 
