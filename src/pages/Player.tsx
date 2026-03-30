@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
+import Footer from "@/components/layout/Footer";
 import WaveformVisualizer from "@/components/content/WaveformVisualizer";
 import SoundwaveReaction from "@/components/SoundwaveReaction";
 import CoListeningRoom from "@/components/CoListening/CoListeningRoom";
@@ -325,6 +326,7 @@ const Player = () => {
           />
         </div>
       </main>
+      <Footer className="md:pl-24" />
     </div>
   );
 };

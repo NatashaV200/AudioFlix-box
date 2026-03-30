@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
@@ -79,6 +80,7 @@ const Login = () => {
           </p>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

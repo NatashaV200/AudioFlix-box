@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
+import Footer from "@/components/layout/Footer";
 
 interface SidebarPlaceholderProps {
   title: string;
@@ -17,6 +18,7 @@ const SidebarPlaceholder = ({ title, description }: SidebarPlaceholderProps) => 
           <p className="mt-3 text-muted-foreground">{description}</p>
         </div>
       </main>
+      <Footer className="md:pl-24" />
     </div>
   );
 };

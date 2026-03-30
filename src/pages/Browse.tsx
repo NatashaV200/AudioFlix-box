@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
+import Footer from "@/components/layout/Footer";
 import ContentCard from "@/components/content/ContentCard";
 import { contentData } from "@/data/content";
 import { Search, SlidersHorizontal } from "lucide-react";
@@ -79,6 +80,7 @@ const Browse = () => {
           </div>
         )}
       </main>
+      <Footer className="md:pl-24" />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
+import Footer from "@/components/layout/Footer";
 import HeroBanner from "@/components/content/HeroBanner";
 import ContentSection from "@/components/content/ContentSection";
 import ContentCard from "@/components/content/ContentCard";
@@ -59,6 +60,8 @@ const Home = () => {
           </div>
         </div>
       )}
+
+      <Footer className="md:pl-24" />
     </div>
   );
 };

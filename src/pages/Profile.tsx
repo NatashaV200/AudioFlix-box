@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
+import Footer from "@/components/layout/Footer";
 import { contentData } from "@/data/content";
 import { Sparkles, Music2 } from "lucide-react";
 
@@ -142,6 +143,7 @@ const Profile = () => {
           </div>
         </section>
       </main>
+      <Footer className="md:pl-24" />
     </div>
   );
 };
