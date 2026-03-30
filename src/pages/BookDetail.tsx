@@ -9,6 +9,10 @@ import {
   Tag,
   PlayCircle,
   UserRound,
+  Share2,
+  Copy,
+  ThumbsUp,
+  X,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
@@ -17,6 +21,16 @@ import AudiobookRow from "@/components/content/AudiobookRow";
 import { contentData } from "@/data/content";
 
 type TabKey = "synopsis" | "reviews" | "author";
+
+type Review = {
+  id: string;
+  name: string;
+  avatar: string;
+  rating: number;
+  date: string;
+  text: string;
+  helpful: number;
+};
 
 const parseDurationToMinutes = (text?: string) => {
   if (!text) return 320;
@@ -58,6 +72,29 @@ const BookDetail = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>("synopsis");
   const [activeChapter, setActiveChapter] = useState<number | null>(null);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [draftRating, setDraftRating] = useState(0);
+  const [draftText, setDraftText] = useState("");
+  const [reviews, setReviews] = useState<Review[]>([
+    {
+      id: "r1",
+      name: "Priya M.",
+      avatar: "PM",
+      rating: 5,
+      date: "Mar 04, 2026",
+      text: "Narration quality is top-tier and pacing is perfect.",
+      helpful: 27,
+    },
+    {
+      id: "r2",
+      name: "David R.",
+      avatar: "DR",
+      rating: 4.8,
+      date: "Feb 21, 2026",
+      text: "Couldn’t stop listening. Great chapter structure.",
+      helpful: 18,
+    },
+  ]);
 
   const book = contentData.find((c) => c.id === id && c.type === "audio");
 
@@ -109,6 +146,37 @@ const BookDetail = () => {
   }
 
   const author = book.author ?? "AudioFlix Narrator";
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  const submitReview = () => {
+    if (!draftRating || !draftText.trim()) return;
+    const review: Review = {
+      id: `r-${Date.now()}`,
+      name: "You",
+      avatar: "YO",
+      rating: draftRating,
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+      text: draftText.trim(),
+      helpful: 0,
+    };
+    setReviews((prev) => [review, ...prev]);
+    setDraftRating(0);
+    setDraftText("");
+    setActiveTab("reviews");
+  };
+
+  const markHelpful = (reviewId: string) => {
+    setReviews((prev) =>
+      prev.map((review) =>
+        review.id === reviewId
+          ? {
+              ...review,
+              helpful: review.helpful + 1,
+            }
+          : review,
+      ),
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -172,6 +240,13 @@ const BookDetail = () => {
                 {resumeProgress > 0 && (
                   <span className="text-xs text-muted-foreground">Last position saved automatically</span>
                 )}
+                <button
+                  onClick={() => setIsShareOpen(true)}
+                  className="tap-target inline-flex items-center gap-2 rounded-xl bg-secondary text-foreground px-4 py-3 font-semibold hover:bg-secondary/80 transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </button>
               </div>
 
               <div className="mt-8 rounded-2xl border border-border/50 bg-card p-4 md:p-5">
@@ -233,14 +308,62 @@ const BookDetail = () => {
 
             {activeTab === "reviews" && (
               <div className="space-y-3">
-                <div className="rounded-xl bg-secondary/50 p-3">
-                  <p className="text-sm text-foreground font-medium">“Narration quality is top-tier and pacing is perfect.”</p>
-                  <p className="text-xs text-muted-foreground mt-1">— Priya M. • 5.0 ★</p>
+                <div className="rounded-xl border border-border/50 bg-secondary/35 p-4">
+                  <p className="text-sm font-semibold text-foreground mb-2">Write a review</p>
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setDraftRating(n)}
+                        className="tap-target w-9 h-9 rounded-md bg-secondary/70 hover:bg-secondary text-gold inline-flex items-center justify-center"
+                        aria-label={`Rate ${n} stars`}
+                      >
+                        <Star className={`w-4 h-4 ${draftRating >= n ? "fill-current" : ""}`} />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={draftText}
+                    onChange={(e) => setDraftText(e.target.value)}
+                    rows={4}
+                    placeholder="What did you think about narration, pacing, and story?"
+                    className="w-full rounded-lg border border-border/60 bg-secondary/60 p-3 text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                  />
+                  <button
+                    onClick={submitReview}
+                    className="tap-target mt-3 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold hover:bg-primary/90"
+                  >
+                    Submit review
+                  </button>
                 </div>
-                <div className="rounded-xl bg-secondary/50 p-3">
-                  <p className="text-sm text-foreground font-medium">“Couldn’t stop listening. Great chapter structure.”</p>
-                  <p className="text-xs text-muted-foreground mt-1">— David R. • 4.8 ★</p>
-                </div>
+
+                {reviews.map((review) => (
+                  <article key={review.id} className="rounded-xl bg-secondary/50 p-3 border border-border/40">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-full bg-accent/25 text-accent-foreground text-xs font-bold inline-flex items-center justify-center">
+                          {review.avatar}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{review.name}</p>
+                          <p className="text-[11px] text-muted-foreground">{review.date}</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-gold bg-gold/10 rounded-md px-2 py-1">
+                        <Star className="w-3 h-3 fill-current" />
+                        {review.rating.toFixed(1)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground mt-2">“{review.text}”</p>
+                    <button
+                      onClick={() => markHelpful(review.id)}
+                      className="tap-target mt-3 inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      Helpful ({review.helpful})
+                    </button>
+                  </article>
+                ))}
               </div>
             )}
 
@@ -265,6 +388,67 @@ const BookDetail = () => {
           </section>
         </div>
       </main>
+
+      {isShareOpen && (
+        <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-display font-bold text-foreground">Share this audiobook</h2>
+              <button
+                onClick={() => setIsShareOpen(false)}
+                className="tap-target w-9 h-9 rounded-md bg-secondary text-muted-foreground hover:text-foreground"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 mx-auto" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 rounded-lg bg-secondary/60 border border-border/60 p-2">
+              <input
+                readOnly
+                value={shareUrl}
+                className="flex-1 bg-transparent text-xs text-muted-foreground outline-none"
+              />
+              <button
+                onClick={async () => {
+                  await navigator.clipboard.writeText(shareUrl);
+                }}
+                className="tap-target inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-2 text-xs font-semibold"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Copy link
+              </button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`Listening to ${book.title} on AudioFlix`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="tap-target rounded-lg bg-secondary px-3 py-2 text-sm text-foreground text-center"
+              >
+                Twitter
+              </a>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="tap-target rounded-lg bg-secondary px-3 py-2 text-sm text-foreground text-center"
+              >
+                Facebook
+              </a>
+              <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="tap-target rounded-lg bg-secondary px-3 py-2 text-sm text-foreground text-center"
+              >
+                LinkedIn
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer className="md:pl-24" />
     </div>
