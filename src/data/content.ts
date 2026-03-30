@@ -1,6 +1,7 @@
 export interface ContentItem {
   id: string;
   title: string;
+  author?: string;
   type: "audio" | "video";
   src: string;
   thumbnail: string;

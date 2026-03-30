@@ -2,20 +2,27 @@ import { useState, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
 import Footer from "@/components/layout/Footer";
-import HeroBanner from "@/components/content/HeroBanner";
-import ContentSection from "@/components/content/ContentSection";
+import FeaturedAudiobookCarousel from "@/components/content/FeaturedAudiobookCarousel";
+import AudiobookRow from "@/components/content/AudiobookRow";
 import ContentCard from "@/components/content/ContentCard";
 import { contentData } from "@/data/content";
 
 const Home = () => {
   const [search, setSearch] = useState("");
 
-  const featured = contentData.find((c) => c.id === "23")!;
-  const trending = contentData.filter((c) => c.category === "trending");
-  const topRated = contentData.filter((c) => c.category === "top-rated");
-  const newReleases = contentData.filter((c) => c.category === "new-releases");
-  const audiobooks = contentData.filter((c) => c.category === "audiobooks");
-  const popularVideos = contentData.filter((c) => c.category === "popular-videos");
+  const audiobooks = contentData.filter((c) => c.type === "audio");
+  const featuredAudiobooks = [...audiobooks]
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    .slice(0, 5);
+  const trendingAudiobooks = audiobooks
+    .filter((c) => c.category === "trending" || c.category === "audiobooks")
+    .slice(0, 12);
+  const topRatedAudiobooks = [...audiobooks]
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    .slice(0, 12);
+  const newAudiobooks = audiobooks
+    .filter((c) => c.category === "new-releases" || c.category === "audiobooks")
+    .slice(0, 12);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return null;
@@ -50,13 +57,11 @@ const Home = () => {
         </div>
       ) : (
         <div className="md:pl-24">
-          <HeroBanner item={featured} />
-          <div className="-mt-20 relative z-10">
-            <ContentSection title="🔥 Trending Now" items={trending} />
-            <ContentSection title="⭐ Top Rated" items={topRated} />
-            <ContentSection title="🆕 New Releases" items={newReleases} variant="wide" />
-            <ContentSection title="🎧 Audiobooks" items={audiobooks} />
-            <ContentSection title="🎬 Popular Videos" items={popularVideos} variant="wide" />
+          <FeaturedAudiobookCarousel items={featuredAudiobooks} />
+          <div className="-mt-6 relative z-10 pb-8">
+            <AudiobookRow title="🔥 Trending Audiobooks" items={trendingAudiobooks} />
+            <AudiobookRow title="⭐ Top Rated" items={topRatedAudiobooks} />
+            <AudiobookRow title="🆕 New Releases" items={newAudiobooks} />
           </div>
         </div>
       )}
