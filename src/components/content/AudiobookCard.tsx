@@ -12,7 +12,7 @@ const AudiobookCard = ({ item }: AudiobookCardProps) => {
 
   return (
     <button
-      onClick={() => navigate(`/player/${item.id}`)}
+      onClick={() => navigate(`/book/${item.id}`)}
       className="group relative w-40 sm:w-44 shrink-0 snap-start rounded-xl text-left focus:outline-none"
     >
       <div className="relative overflow-hidden rounded-xl aspect-[2/3] bg-muted card-shine border border-border/40">
