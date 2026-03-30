@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
 import Footer from "@/components/layout/Footer";
 import WaveformVisualizer from "@/components/content/WaveformVisualizer";
+import CustomAudioPlayer from "@/components/content/CustomAudioPlayer";
 import SoundwaveReaction from "@/components/SoundwaveReaction";
 import CoListeningRoom from "@/components/CoListening/CoListeningRoom";
 import { contentData } from "@/data/content";
@@ -178,7 +179,7 @@ const Player = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Sidebar />
-      <main className="pt-20 pb-12 max-w-5xl mx-auto px-4 md:pl-24">
+      <main className={`pt-20 max-w-5xl mx-auto px-4 md:pl-24 ${item.type === "audio" ? "pb-44" : "pb-12"}`}>
         <Link
           to="/browse"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
@@ -235,29 +236,6 @@ const Player = () => {
                   audioEnergy={audioEnergy}
                 />
                 <div className="flex items-center justify-center gap-3 px-2">
-                  <button
-                    onClick={() => {
-                      const audio = audioRef.current;
-                      if (audio) {
-                        if (isPlaying) {
-                          audio.pause();
-                        } else {
-                          audio.play();
-                        }
-                      }
-                    }}
-                    className="w-12 h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center glow-primary"
-                  >
-                    {isPlaying ? (
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    )}
-                  </button>
                   <span className="text-xs font-medium text-muted-foreground">Click waveform to seek</span>
                 </div>
               </div>
@@ -326,6 +304,9 @@ const Player = () => {
           />
         </div>
       </main>
+      {item.type === "audio" && (
+        <CustomAudioPlayer item={item} audioRef={audioRef} isPlaying={isPlaying} />
+      )}
       <Footer className="md:pl-24" />
     </div>
   );
