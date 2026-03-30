@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Index from "./pages/Index.tsx";
 import Browse from "./pages/Browse.tsx";
+import Search from "./pages/Search.tsx";
 import Player from "./pages/Player.tsx";
 import BookDetail from "./pages/BookDetail.tsx";
 import Login from "./pages/Login.tsx";
@@ -14,7 +15,8 @@ const App = () => (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/browse" element={<Browse />} />
-      <Route path="/explore" element={<Browse />} />
+      <Route path="/search" element={<Search />} />
+      <Route path="/explore" element={<Search />} />
       <Route path="/library" element={<Library />} />
       <Route path="/wishlist" element={<Library initialTab="wishlist" />} />
       <Route
