@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Search, Menu, X, Bell, Moon, Sun, User, Crown, ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface NavbarProps {
   onSearchChange?: (query: string) => void;
@@ -12,6 +12,16 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("audioflix-theme") !== "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", !isDarkMode);
+    localStorage.setItem("audioflix-theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
 
   const links = [
     { to: "/", label: "Home" },
@@ -45,6 +55,11 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
         </div>
 
         <div className="flex items-center gap-2">
+          <span className="hidden md:inline-flex items-center gap-1 rounded-lg bg-gold/15 text-gold px-2.5 py-1 text-xs font-semibold border border-gold/30">
+            <Crown className="w-3.5 h-3.5" />
+            Premium
+          </span>
+
           <div className={`hidden md:flex items-center transition-all duration-300 ${searchOpen ? "w-64" : "w-10"}`}>
             {searchOpen ? (
               <div className="flex items-center w-full bg-secondary rounded-lg px-3 py-2 gap-2">
@@ -77,6 +92,62 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
           </div>
 
           <button
+            onClick={() => setIsDarkMode((prev) => !prev)}
+            className="hidden md:flex w-10 h-10 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+            aria-label="Toggle dark mode"
+            title="Toggle theme"
+          >
+            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+
+          <button
+            className="hidden md:flex relative w-10 h-10 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+            aria-label="Notifications"
+            title="Notifications"
+          >
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary" />
+          </button>
+
+          <div className="hidden md:block relative">
+            <button
+              onClick={() => setUserMenuOpen((prev) => !prev)}
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+              aria-label="User menu"
+            >
+              <span className="w-7 h-7 rounded-full bg-accent/30 text-accent-foreground flex items-center justify-center text-xs font-bold">
+                NA
+              </span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+
+            {userMenuOpen && (
+              <div className="absolute right-0 mt-2 w-44 rounded-lg border border-border bg-card shadow-xl p-1.5 animate-fade-in z-50">
+                <Link
+                  to="/profile"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm rounded-md text-foreground hover:bg-secondary"
+                >
+                  <User className="w-4 h-4" />
+                  My Profile
+                </Link>
+                <button
+                  onClick={() => setUserMenuOpen(false)}
+                  className="w-full text-left px-3 py-2 text-sm rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+                >
+                  Settings
+                </button>
+                <button
+                  onClick={() => setUserMenuOpen(false)}
+                  className="w-full text-left px-3 py-2 text-sm rounded-md text-destructive hover:bg-destructive/10"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
             className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
@@ -87,6 +158,29 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
 
       {mobileOpen && (
         <div className="md:hidden bg-background/95 backdrop-blur-2xl border-b border-border px-4 pb-4 animate-fade-in">
+          <div className="flex items-center justify-between gap-2 mb-3 pt-2">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-gold/15 text-gold px-2.5 py-1 text-xs font-semibold border border-gold/30">
+              <Crown className="w-3.5 h-3.5" />
+              Premium
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsDarkMode((prev) => !prev)}
+                className="w-9 h-9 flex items-center justify-center rounded-lg bg-secondary/60 text-muted-foreground"
+                aria-label="Toggle dark mode"
+              >
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+              <button
+                className="relative w-9 h-9 flex items-center justify-center rounded-lg bg-secondary/60 text-muted-foreground"
+                aria-label="Notifications"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary" />
+              </button>
+            </div>
+          </div>
+
           {showSearch && (
             <div className="flex items-center bg-secondary rounded-lg px-3 py-2.5 gap-2 mb-3">
               <Search className="w-4 h-4 text-muted-foreground" />
