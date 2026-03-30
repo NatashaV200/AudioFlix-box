@@ -34,7 +34,7 @@ const Sidebar = () => {
         <div className="flex items-center justify-end mb-2">
           <button
             onClick={() => setCollapsed((v) => !v)}
-            className="w-8 h-8 rounded-lg bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center justify-center"
+            className="tap-target w-11 h-11 rounded-lg bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center justify-center"
             aria-label="Toggle sidebar"
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}

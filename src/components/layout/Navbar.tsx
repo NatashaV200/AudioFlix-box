@@ -84,7 +84,7 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
             ) : (
               <button
                 onClick={() => setSearchOpen(true)}
-                className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                className="tap-target w-11 h-11 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
               >
                 <Search className="w-5 h-5" />
               </button>
@@ -93,7 +93,7 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
 
           <button
             onClick={() => setIsDarkMode((prev) => !prev)}
-            className="hidden md:flex w-10 h-10 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+            className="hidden md:flex tap-target w-11 h-11 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
             aria-label="Toggle dark mode"
             title="Toggle theme"
           >
@@ -101,7 +101,7 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
           </button>
 
           <button
-            className="hidden md:flex relative w-10 h-10 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+            className="hidden md:flex tap-target relative w-11 h-11 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
             aria-label="Notifications"
             title="Notifications"
           >
@@ -112,7 +112,7 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
           <div className="hidden md:block relative">
             <button
               onClick={() => setUserMenuOpen((prev) => !prev)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+              className="tap-target flex items-center gap-2 rounded-lg px-2 py-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
               aria-label="User menu"
             >
               <span className="w-7 h-7 rounded-full bg-accent/30 text-accent-foreground flex items-center justify-center text-xs font-bold">
@@ -148,7 +148,7 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
           </div>
 
           <button
-            className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground"
+            className="md:hidden tap-target w-11 h-11 flex items-center justify-center rounded-lg text-muted-foreground"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -166,13 +166,13 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsDarkMode((prev) => !prev)}
-                className="w-9 h-9 flex items-center justify-center rounded-lg bg-secondary/60 text-muted-foreground"
+                className="tap-target w-11 h-11 flex items-center justify-center rounded-lg bg-secondary/60 text-muted-foreground"
                 aria-label="Toggle dark mode"
               >
                 {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
               <button
-                className="relative w-9 h-9 flex items-center justify-center rounded-lg bg-secondary/60 text-muted-foreground"
+                className="tap-target relative w-11 h-11 flex items-center justify-center rounded-lg bg-secondary/60 text-muted-foreground"
                 aria-label="Notifications"
               >
                 <Bell className="w-4 h-4" />
@@ -198,7 +198,7 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
               key={link.to}
               to={link.to}
               onClick={() => setMobileOpen(false)}
-              className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+              className={`block tap-target px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                 location.pathname === link.to
                   ? "bg-secondary text-foreground"
                   : "text-muted-foreground hover:text-foreground"
