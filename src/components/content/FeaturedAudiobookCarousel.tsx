@@ -5,20 +5,40 @@ import { ContentItem } from "@/data/content";
 
 interface FeaturedAudiobookCarouselProps {
   items: ContentItem[];
+  isLoading?: boolean;
 }
 
-const FeaturedAudiobookCarousel = ({ items }: FeaturedAudiobookCarouselProps) => {
+const FeaturedAudiobookCarousel = ({ items, isLoading = false }: FeaturedAudiobookCarouselProps) => {
   const navigate = useNavigate();
   const featured = useMemo(() => items.slice(0, 5), [items]);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (featured.length <= 1) return;
+    if (featured.length <= 1 || isLoading) return;
     const timer = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % featured.length);
     }, 4500);
     return () => window.clearInterval(timer);
-  }, [featured.length]);
+  }, [featured.length, isLoading]);
+
+  if (isLoading) {
+    return (
+      <section className="relative h-[58vh] min-h-[360px] max-h-[620px] overflow-hidden">
+        <div className="absolute inset-0 w-full h-full bg-muted animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+
+        <div className="relative h-full max-w-[1440px] mx-auto px-4 lg:px-8 flex items-end pb-12">
+          <div className="max-w-2xl w-full space-y-4">
+            <div className="h-6 w-32 bg-secondary rounded animate-pulse" />
+            <div className="h-16 w-full bg-secondary rounded animate-pulse" />
+            <div className="h-4 w-2/3 bg-secondary rounded animate-pulse" />
+            <div className="h-12 w-40 bg-secondary rounded animate-pulse mt-6" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (featured.length === 0) return null;
 
@@ -50,7 +70,8 @@ const FeaturedAudiobookCarousel = ({ items }: FeaturedAudiobookCarouselProps) =>
 
           <button
             onClick={() => navigate(`/player/${current.id}`)}
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-6 py-3 font-semibold hover:bg-primary/90 transition-colors glow-primary"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-6 py-3 font-semibold hover:bg-primary/90 transition-colors glow-primary focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-label={`Play ${current.title} by ${current.author || "AudioFlix Narrator"}`}
           >
             <Play className="w-5 h-5 fill-current" />
             Play Now
@@ -63,24 +84,25 @@ const FeaturedAudiobookCarousel = ({ items }: FeaturedAudiobookCarouselProps) =>
           <button
             key={item.id}
             onClick={() => setIndex(i)}
-            className={`h-2.5 rounded-full transition-all ${i === index ? "w-8 bg-primary" : "w-2.5 bg-foreground/40"}`}
-            aria-label={`Go to slide ${i + 1}`}
+            className={`h-2.5 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${i === index ? "w-8 bg-primary" : "w-2.5 bg-foreground/40"}`}
+            aria-label={`Go to slide ${i + 1}: ${item.title}`}
+            aria-current={i === index ? "true" : "false"}
           />
         ))}
       </div>
 
       <button
         onClick={() => setIndex((prev) => (prev - 1 + featured.length) % featured.length)}
-        className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/60 text-foreground items-center justify-center hover:bg-background/80"
-        aria-label="Previous"
+        className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/60 text-foreground items-center justify-center hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label="Previous featured audiobook"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
 
       <button
         onClick={() => setIndex((prev) => (prev + 1) % featured.length)}
-        className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/60 text-foreground items-center justify-center hover:bg-background/80"
-        aria-label="Next"
+        className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/60 text-foreground items-center justify-center hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label="Next featured audiobook"
       >
         <ChevronRight className="w-5 h-5" />
       </button>

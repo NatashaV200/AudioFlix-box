@@ -65,6 +65,7 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
   const [sleepMinutes, setSleepMinutes] = useState(0);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const sleepTimerRef = useRef<number | null>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
 
   const chapters = useMemo(() => chapterize(item), [item]);
 
@@ -164,6 +165,45 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
     setSleepMinutes(next);
   };
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle shortcuts if not typing in an input/textarea
+      const isTyping =
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement;
+
+      if (isTyping) return;
+
+      switch (event.code) {
+        case "Space": {
+          event.preventDefault();
+          togglePlay();
+          break;
+        }
+        case "ArrowLeft": {
+          event.preventDefault();
+          const audio = audioRef.current;
+          if (audio) {
+            audio.currentTime = Math.max(0, audio.currentTime - 10);
+          }
+          break;
+        }
+        case "ArrowRight": {
+          event.preventDefault();
+          const audio = audioRef.current;
+          if (audio) {
+            audio.currentTime = Math.min(duration, audio.currentTime + 10);
+          }
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [togglePlay, duration, audioRef]);
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:left-20">
       {expanded && (
@@ -177,14 +217,16 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <button
                   onClick={addBookmark}
-                  className="tap-target inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80"
+                  className="tap-target inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  aria-label="Add bookmark at current position"
                 >
                   <BookmarkPlus className="w-4 h-4" />
                   Add bookmark
                 </button>
                 <button
                   onClick={cycleSleep}
-                  className="tap-target inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80"
+                  className="tap-target inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  aria-label={`Sleep timer: ${sleepMinutes > 0 ? `${sleepMinutes} minutes` : "Off"}`}
                 >
                   <TimerReset className="w-4 h-4" />
                   Sleep: {sleepMinutes > 0 ? `${sleepMinutes}m` : "Off"}
@@ -204,7 +246,8 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
                             void audioRef.current.play();
                           }
                         }}
-                        className="tap-target rounded-md bg-secondary/60 px-2.5 py-1.5 text-xs text-foreground hover:bg-secondary"
+                        className="tap-target rounded-md bg-secondary/60 px-2.5 py-1.5 text-xs text-foreground hover:bg-secondary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                        aria-label={`Jump to bookmark at ${formatTime(bm)}`}
                       >
                         {formatTime(bm)}
                       </button>
@@ -225,7 +268,8 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
                           void audioRef.current.play();
                         }
                       }}
-                      className="w-full tap-target rounded-lg bg-secondary/50 hover:bg-secondary px-3 py-2 text-left flex items-center justify-between text-sm"
+                      className="w-full tap-target rounded-lg bg-secondary/50 hover:bg-secondary px-3 py-2 text-left flex items-center justify-between text-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      aria-label={`Play ${chapter.title} (${chapter.duration})`}
                     >
                       <span className="inline-flex items-center gap-2 text-foreground">
                         <PlayCircle className="w-4 h-4" />
@@ -246,8 +290,9 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
           <div className="flex items-center gap-3">
             <button
               onClick={togglePlay}
-              className="tap-target w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90"
-              aria-label={isPlaying ? "Pause" : "Play"}
+              className="tap-target w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label={isPlaying ? "Pause (Space)" : "Play (Space)"}
+              title="Space bar to toggle play/pause"
             >
               {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
             </button>
@@ -268,23 +313,26 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
                   setCurrentTime(next);
                   if (audioRef.current) audioRef.current.currentTime = next;
                 }}
-                className="w-full accent-primary"
-                aria-label="Seek"
+                className="w-full accent-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                aria-label="Seek timeline"
+                title="Use arrow keys to skip 10 seconds"
               />
             </div>
 
             <button
               onClick={cycleSpeed}
-              className="tap-target rounded-lg bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary/80"
-              aria-label="Playback speed"
+              className="tap-target rounded-lg bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label={`Playback speed: ${speed}x`}
+              title="Click to cycle through speed options (0.75x, 1x, 1.25x, 1.5x, 2x)"
             >
               {speed}x
             </button>
 
             <button
               onClick={cycleSleep}
-              className="tap-target rounded-lg bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary/80 hidden sm:inline-flex items-center gap-1.5"
-              aria-label="Sleep timer"
+              className="tap-target rounded-lg bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary/80 hidden sm:inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label={`Sleep timer: ${sleepMinutes > 0 ? `${sleepMinutes} minutes` : "Off"}`}
+              title="Click to cycle through sleep timer options (Off, 15m, 30m, 45m, 60m)"
             >
               <Clock3 className="w-4 h-4" />
               {sleepMinutes > 0 ? `${sleepMinutes}m` : "Sleep"}
@@ -292,8 +340,9 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
 
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="tap-target w-11 h-11 rounded-lg bg-secondary text-foreground hover:bg-secondary/80 inline-flex items-center justify-center"
+              className="tap-target w-11 h-11 rounded-lg bg-secondary text-foreground hover:bg-secondary/80 inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               aria-label={expanded ? "Collapse player" : "Expand player"}
+              aria-expanded={expanded}
             >
               {expanded ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
             </button>

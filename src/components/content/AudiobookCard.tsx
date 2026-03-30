@@ -5,9 +5,10 @@ import { ContentItem } from "@/data/content";
 
 interface AudiobookCardProps {
   item: ContentItem;
+  isLoading?: boolean;
 }
 
-const AudiobookCard = ({ item }: AudiobookCardProps) => {
+const AudiobookCard = ({ item, isLoading = false }: AudiobookCardProps) => {
   const navigate = useNavigate();
   const author = item.author ?? "AudioFlix Narrator";
   const [isDownloaded, setIsDownloaded] = useState(false);
@@ -31,10 +32,23 @@ const AudiobookCard = ({ item }: AudiobookCardProps) => {
     };
   }, [item.id]);
 
+  if (isLoading) {
+    return (
+      <div className="group relative w-40 sm:w-44 shrink-0 snap-start rounded-xl">
+        <div className="w-40 sm:w-44 aspect-[2/3] bg-muted rounded-xl animate-pulse" />
+        <div className="mt-2">
+          <div className="h-4 w-full bg-muted rounded animate-pulse mb-2" />
+          <div className="h-3 w-3/4 bg-muted rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <button
       onClick={() => navigate(`/book/${item.id}`)}
-      className="group relative w-40 sm:w-44 shrink-0 snap-start rounded-xl text-left focus:outline-none"
+      className="group relative w-40 sm:w-44 shrink-0 snap-start rounded-xl text-left focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      aria-label={`${item.title} by ${author}, rating ${item.rating || "not rated"}`}
     >
       <div className="relative overflow-hidden rounded-xl aspect-[2/3] bg-muted card-shine border border-border/40">
         <img
@@ -47,14 +61,14 @@ const AudiobookCard = ({ item }: AudiobookCardProps) => {
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity" />
 
         {item.rating && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-background/75 px-1.5 py-0.5 backdrop-blur-sm">
+          <div className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-background/75 px-1.5 py-0.5 backdrop-blur-sm" aria-label={`Rating: ${item.rating}`}>
             <Star className="w-3 h-3 text-gold fill-current" />
             <span className="text-[10px] font-semibold text-foreground">{item.rating}</span>
           </div>
         )}
 
         {isDownloaded && (
-          <div className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-md bg-success/20 text-success px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-sm">
+          <div className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-md bg-success/20 text-success px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-sm" title="This book is saved for offline listening">
             <CheckCircle2 className="w-3 h-3" />
             Saved
           </div>
