@@ -27,6 +27,7 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
     { to: "/", label: "Home" },
     { to: "/browse", label: "Browse" },
     { to: "/profile", label: "Profile" },
+    { to: "/signup", label: "Sign Up" },
     { to: "/login", label: "Sign In" },
   ];
 
