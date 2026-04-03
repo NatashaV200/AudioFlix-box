@@ -5,6 +5,17 @@ import Footer from "@/components/layout/Footer";
 import { contentData } from "@/data/content";
 import { Crown, Headphones, Clock3, Save, Sparkles } from "lucide-react";
 
+const DAILY_LISTENING_KEY = "audioflix-daily-listening-seconds";
+const DAILY_STREAK_THRESHOLD_SECONDS = 5 * 60;
+const LEVEL_STEP_MINUTES = 600;
+
+const formatDateKey = (date: Date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
 const seededValue = (seed: string) => {
   let hash = 0;
   for (let i = 0; i < seed.length; i += 1) {
@@ -100,6 +111,98 @@ const Profile = () => {
     };
   }, [user.handle]);
 
+  const dailyListeningSeconds = useMemo(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem(DAILY_LISTENING_KEY) ?? "{}") as Record<string, number>;
+      return Object.entries(raw).reduce<Record<string, number>>((acc, [date, seconds]) => {
+        if (date && Number.isFinite(seconds) && seconds > 0) {
+          acc[date] = Math.floor(seconds);
+        }
+        return acc;
+      }, {});
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const { streakDays, currentLevel, levelProgressPercent, minutesToNextLevel, badges } = useMemo(() => {
+    const qualifyingDays = Object.values(dailyListeningSeconds).filter(
+      (seconds) => seconds >= DAILY_STREAK_THRESHOLD_SECONDS,
+    ).length;
+
+    let streak = 0;
+    const cursor = new Date();
+    while (true) {
+      const key = formatDateKey(cursor);
+      const listened = dailyListeningSeconds[key] ?? 0;
+      if (listened < DAILY_STREAK_THRESHOLD_SECONDS) break;
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    const totalMinutes = Math.floor(
+      Object.values(dailyListeningSeconds).reduce((acc, seconds) => acc + seconds, 0) / 60,
+    );
+    const level = Math.max(1, Math.floor(totalMinutes / LEVEL_STEP_MINUTES) + 1);
+    const levelStart = (level - 1) * LEVEL_STEP_MINUTES;
+    const inLevelMinutes = Math.max(0, totalMinutes - levelStart);
+    const levelPct = Math.min(100, Math.round((inLevelMinutes / LEVEL_STEP_MINUTES) * 100));
+    const toNext = Math.max(0, level * LEVEL_STEP_MINUTES - totalMinutes);
+
+    const badgeList = [
+      {
+        id: "first-session",
+        emoji: "🎧",
+        name: "First Session",
+        description: "Complete your first day of 5+ minutes",
+        unlocked: qualifyingDays >= 1,
+      },
+      {
+        id: "streak-3",
+        emoji: "🔥",
+        name: "On Fire",
+        description: "Maintain a 3-day listening streak",
+        unlocked: streak >= 3,
+      },
+      {
+        id: "streak-7",
+        emoji: "🏅",
+        name: "Week Warrior",
+        description: "Maintain a 7-day listening streak",
+        unlocked: streak >= 7,
+      },
+      {
+        id: "marathon",
+        emoji: "🚀",
+        name: "Marathon Listener",
+        description: "Accumulate 20 total listening hours",
+        unlocked: totalMinutes >= 1200,
+      },
+      {
+        id: "consistency",
+        emoji: "📅",
+        name: "Consistency Pro",
+        description: "Reach 14 qualifying listening days",
+        unlocked: qualifyingDays >= 14,
+      },
+      {
+        id: "level-5",
+        emoji: "👑",
+        name: "Level 5 Club",
+        description: "Reach listener level 5",
+        unlocked: level >= 5,
+      },
+    ];
+
+    return {
+      streakDays: streak,
+      currentLevel: level,
+      levelProgressPercent: levelPct,
+      minutesToNextLevel: toNext,
+      badges: badgeList,
+    };
+  }, [dailyListeningSeconds]);
+
   const circularProgress = {
     radius: 54,
     circumference: 2 * Math.PI * 54,
@@ -180,6 +283,65 @@ const Profile = () => {
                   </div>
                   <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-primary to-accent" style={{ width: `${entry.share}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-2xl border border-border/50 bg-card p-5 md:p-6">
+          <h2 className="text-xl font-display font-bold text-foreground mb-4 inline-flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-accent" />
+            Listening gamification
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="rounded-xl border border-border/50 bg-secondary/35 p-4">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Current streak</p>
+              <p className="mt-2 text-3xl font-bold text-foreground">{streakDays} days</p>
+              <p className="text-xs text-muted-foreground mt-1">Consecutive days with 5+ minutes listened</p>
+            </div>
+
+            <div className="rounded-xl border border-border/50 bg-secondary/35 p-4 md:col-span-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Level progress</p>
+                <p className="text-sm font-semibold text-foreground">Level {currentLevel}</p>
+              </div>
+              <div className="h-2.5 rounded-full bg-secondary overflow-hidden mt-3">
+                <div className="h-full bg-gradient-to-r from-primary to-accent" style={{ width: `${levelProgressPercent}%` }} />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {minutesToNextLevel > 0
+                  ? `${minutesToNextLevel} minutes to reach Level ${currentLevel + 1}`
+                  : `Level ${currentLevel} complete`}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <p className="text-sm font-semibold text-foreground mb-3">Badge gallery</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {badges.map((badge) => (
+                <div
+                  key={badge.id}
+                  className={`rounded-xl border p-3 transition-colors ${
+                    badge.unlocked
+                      ? "border-primary/40 bg-primary/10"
+                      : "border-border/50 bg-secondary/30 opacity-75"
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-xl" aria-hidden="true">
+                      {badge.emoji}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{badge.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{badge.description}</p>
+                      <p className="text-[11px] mt-1 font-medium text-foreground/80">
+                        {badge.unlocked ? "Unlocked" : "Locked"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
