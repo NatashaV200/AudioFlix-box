@@ -19,19 +19,15 @@ const tabs: Array<{ key: LibraryTab; label: string }> = [
   { key: "wishlist", label: "Wishlist" },
 ];
 
-const seeded = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i += 1) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-};
-
 const getProgress = (item: ContentItem) => {
   const stored = Number(localStorage.getItem(`audioflix-progress-${item.id}`) ?? "0");
-  if (Number.isFinite(stored) && stored > 0) return Math.min(stored, 99);
-  return (seeded(item.id) % 75) + 10;
+  if (Number.isFinite(stored) && stored > 0) return Math.min(Math.floor(stored), 100);
+  return 0;
+};
+
+const getLastPlayed = (item: ContentItem) => {
+  const stored = Number(localStorage.getItem(`audioflix-last-played-${item.id}`) ?? "0");
+  return Number.isFinite(stored) ? stored : 0;
 };
 
 const Library = ({ initialTab = "library" }: LibraryProps) => {
@@ -40,14 +36,20 @@ const Library = ({ initialTab = "library" }: LibraryProps) => {
 
   const audiobooks = useMemo(() => contentData.filter((c) => c.type === "audio"), []);
 
-  const continueListening = useMemo(
-    () =>
-      audiobooks
-        .map((item) => ({ item, progress: getProgress(item) }))
-        .sort((a, b) => b.progress - a.progress)
-        .slice(0, 12),
-    [audiobooks],
-  );
+  const continueListening = useMemo(() => {
+    return contentData
+      .map((item) => ({
+        item,
+        progress: getProgress(item),
+        lastPlayed: getLastPlayed(item),
+      }))
+      .filter(({ progress }) => progress > 0 && progress < 100)
+      .sort((a, b) => {
+        if (b.lastPlayed !== a.lastPlayed) return b.lastPlayed - a.lastPlayed;
+        return b.progress - a.progress;
+      })
+      .slice(0, 18);
+  }, []);
 
   const downloads = useMemo(() => audiobooks.slice(0, 10), [audiobooks]);
   const wishlist = useMemo(() => audiobooks.slice(8, 20), [audiobooks]);
@@ -107,42 +109,55 @@ const Library = ({ initialTab = "library" }: LibraryProps) => {
           </div>
 
           {activeTab === "continue" ? (
-            <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4" : "space-y-3"}>
-              {continueListening.map(({ item, progress }) => (
-                <article
-                  key={item.id}
-                  className={`rounded-xl border border-border/50 bg-card p-3 ${
-                    viewMode === "list" ? "flex items-center gap-3" : ""
-                  }`}
+            continueListening.length === 0 ? (
+              <div className="rounded-xl border border-border/50 bg-card p-8 text-center">
+                <h2 className="text-lg font-semibold text-foreground">No active listening yet</h2>
+                <p className="text-sm text-muted-foreground mt-2">Start any audiobook or video and it will appear here automatically.</p>
+                <Link
+                  to="/browse"
+                  className="tap-target mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold"
                 >
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className={viewMode === "list" ? "w-16 h-16 rounded-lg object-cover" : "w-full aspect-[16/9] rounded-lg object-cover"}
-                    loading="lazy"
-                  />
-                  <div className="flex-1 min-w-0 mt-3">
-                    <h3 className="text-sm font-semibold text-foreground truncate">{item.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.author ?? "AudioFlix Narrator"}</p>
+                  Browse content
+                </Link>
+              </div>
+            ) : (
+              <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4" : "space-y-3"}>
+                {continueListening.map(({ item, progress }) => (
+                  <article
+                    key={item.id}
+                    className={`rounded-xl border border-border/50 bg-card p-3 ${
+                      viewMode === "list" ? "flex items-center gap-3" : ""
+                    }`}
+                  >
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className={viewMode === "list" ? "w-16 h-16 rounded-lg object-cover" : "w-full aspect-[16/9] rounded-lg object-cover"}
+                      loading="lazy"
+                    />
+                    <div className="flex-1 min-w-0 mt-3">
+                      <h3 className="text-sm font-semibold text-foreground truncate">{item.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">{item.author ?? "AudioFlix Narrator"}</p>
 
-                    <div className="mt-3">
-                      <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+                      <div className="mt-3">
+                        <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1">{progress}% completed</p>
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-1">{progress}% completed</p>
-                    </div>
 
-                    <Link
-                      to={`/player/${item.id}`}
-                      className="tap-target mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs font-semibold"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      Resume
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
+                      <Link
+                        to={`/player/${item.id}`}
+                        className="tap-target mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs font-semibold"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        Resume
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )
           ) : (
             <div
               className={

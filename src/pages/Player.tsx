@@ -158,6 +158,7 @@ const Player = () => {
       localStorage.setItem(positionKey, String(Math.floor(t)));
       const progress = Math.max(0, Math.min(Math.floor((t / d) * 100), 100));
       localStorage.setItem(progressKey, String(progress));
+      localStorage.setItem(`audioflix-last-played-${item.id}`, String(Date.now()));
       setResumeProgress(progress);
     };
 
