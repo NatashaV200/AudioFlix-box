@@ -68,7 +68,7 @@ const Home = () => {
   }, [audiobooks]);
 
   const continueYourSeries = useMemo(() => {
-    return audiobooks
+    const inProgress = audiobooks
       .map((item) => {
         const progress = Number(localStorage.getItem(`audioflix-progress-${item.id}`) ?? "0");
         const lastPlayed = Number(localStorage.getItem(`audioflix-last-played-${item.id}`) ?? "0");
@@ -81,6 +81,12 @@ const Home = () => {
       })
       .slice(0, 12)
       .map((entry) => entry.item);
+
+    if (inProgress.length > 0) return inProgress;
+
+    return [...audiobooks]
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      .slice(0, 12);
   }, [audiobooks]);
 
   const popularInYourGenres = useMemo(() => {

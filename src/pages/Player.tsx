@@ -137,6 +137,7 @@ const Player = () => {
 
     const positionKey = `audioflix-position-seconds-${item.id}`;
     const progressKey = `audioflix-progress-${item.id}`;
+    let lastGenrePreferenceUpdateSecond = -1;
 
     const onLoadedMetadata = () => {
       const storedPosition = Number(localStorage.getItem(positionKey) ?? "0");
@@ -159,6 +160,20 @@ const Player = () => {
       const progress = Math.max(0, Math.min(Math.floor((t / d) * 100), 100));
       localStorage.setItem(progressKey, String(progress));
       localStorage.setItem(`audioflix-last-played-${item.id}`, String(Date.now()));
+
+      const currentSecond = Math.floor(t);
+      if (item.genre && currentSecond > 0 && currentSecond % 15 === 0 && currentSecond !== lastGenrePreferenceUpdateSecond) {
+        lastGenrePreferenceUpdateSecond = currentSecond;
+        try {
+          const key = "audioflix-genre-preferences";
+          const existing = JSON.parse(localStorage.getItem(key) ?? "{}") as Record<string, number>;
+          existing[item.genre] = (existing[item.genre] ?? 0) + 1;
+          localStorage.setItem(key, JSON.stringify(existing));
+        } catch {
+          // ignore storage parse errors
+        }
+      }
+
       setResumeProgress(progress);
     };
 
