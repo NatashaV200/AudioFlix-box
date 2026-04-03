@@ -8,6 +8,7 @@ import Downloads from "./pages/Downloads.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
 import Profile from "./pages/Profile.tsx";
+import MyHighlights from "./pages/MyHighlights.tsx";
 import SidebarPlaceholder from "./pages/SidebarPlaceholder.tsx";
 import Library from "./pages/Library.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -21,6 +22,7 @@ const App = () => (
       <Route path="/explore" element={<Search />} />
       <Route path="/library" element={<Library />} />
       <Route path="/continue" element={<Library initialTab="continue" />} />
+      <Route path="/highlights" element={<MyHighlights />} />
       <Route path="/downloads" element={<Downloads />} />
       <Route path="/wishlist" element={<Library initialTab="wishlist" />} />
       <Route

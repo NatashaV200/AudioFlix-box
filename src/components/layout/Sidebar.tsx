@@ -9,6 +9,7 @@ import {
   Compass,
   Heart,
   History,
+  Highlighter,
   PlayCircle,
   Settings,
 } from "lucide-react";
@@ -18,6 +19,7 @@ const navItems = [
   { to: "/library", label: "Library", icon: Library },
   { to: "/continue", label: "Continue Listening", icon: PlayCircle },
   { to: "/downloads", label: "Downloads", icon: Download },
+  { to: "/highlights", label: "My Highlights", icon: Highlighter },
   { to: "/explore", label: "Explore", icon: Compass },
   { to: "/wishlist", label: "Wishlist", icon: Heart },
   { to: "/history", label: "Listening History", icon: History },

@@ -1,6 +1,8 @@
 import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import {
   BookmarkPlus,
+  Check,
+  Circle,
   ChevronUp,
   ChevronDown,
   Clock3,
@@ -10,6 +12,7 @@ import {
   TimerReset,
 } from "lucide-react";
 import { ContentItem } from "@/data/content";
+import { addListeningHighlight, getHighlightsByContent, ListeningHighlight } from "@/lib/highlightsStore";
 
 interface CustomAudioPlayerProps {
   item: ContentItem;
@@ -19,6 +22,7 @@ interface CustomAudioPlayerProps {
 
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2] as const;
 const SLEEP_OPTIONS = [0, 15, 30, 45, 60] as const;
+const HIGHLIGHT_COLORS = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"] as const;
 
 const formatTime = (seconds: number) => {
   const safe = Math.max(0, Math.floor(seconds));
@@ -63,7 +67,11 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
   const [duration, setDuration] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [sleepMinutes, setSleepMinutes] = useState(0);
-  const [bookmarks, setBookmarks] = useState<number[]>([]);
+  const [highlights, setHighlights] = useState<ListeningHighlight[]>([]);
+  const [isHighlightModalOpen, setIsHighlightModalOpen] = useState(false);
+  const [bookmarkNote, setBookmarkNote] = useState("");
+  const [bookmarkColor, setBookmarkColor] = useState<(typeof HIGHLIGHT_COLORS)[number]>(HIGHLIGHT_COLORS[0]);
+  const [isSavingHighlight, setIsSavingHighlight] = useState(false);
   const sleepTimerRef = useRef<number | null>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
@@ -87,9 +95,7 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
     const audio = audioRef.current;
     if (!audio) return;
 
-    const bookmarkKey = `audioflix-bookmarks-${item.id}`;
-    const savedBookmarks = JSON.parse(localStorage.getItem(bookmarkKey) ?? "[]") as number[];
-    setBookmarks(savedBookmarks);
+    void getHighlightsByContent(item.id).then(setHighlights);
 
     const onLoaded = () => {
       const stored = Number(localStorage.getItem(`audioflix-position-seconds-${item.id}`) ?? "0");
@@ -146,11 +152,33 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
     else audio.pause();
   };
 
-  const addBookmark = () => {
-    const mark = Math.floor(currentTime);
-    const unique = Array.from(new Set([...bookmarks, mark])).sort((a, b) => a - b);
-    setBookmarks(unique);
-    localStorage.setItem(`audioflix-bookmarks-${item.id}`, JSON.stringify(unique));
+  const openBookmarkModal = () => {
+    setBookmarkNote("");
+    setBookmarkColor(HIGHLIGHT_COLORS[0]);
+    setIsHighlightModalOpen(true);
+  };
+
+  const saveBookmarkHighlight = async () => {
+    const timestamp = Math.max(0, Math.floor(currentTime));
+    const trimmed = bookmarkNote.trim();
+    if (!trimmed) return;
+
+    setIsSavingHighlight(true);
+    await addListeningHighlight({
+      contentId: item.id,
+      title: item.title,
+      thumbnail: item.thumbnail,
+      author: item.author,
+      timestamp,
+      note: trimmed,
+      color: bookmarkColor,
+      createdAt: Date.now(),
+    });
+
+    const refreshed = await getHighlightsByContent(item.id);
+    setHighlights(refreshed);
+    setIsSavingHighlight(false);
+    setIsHighlightModalOpen(false);
   };
 
   const cycleSpeed = () => {
@@ -206,6 +234,60 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:left-20">
+      {isHighlightModalOpen && (
+        <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm px-4 flex items-center justify-center">
+          <div className="w-full max-w-md rounded-2xl border border-border/50 bg-card p-5 animate-fade-in">
+            <h3 className="text-lg font-display font-bold text-foreground">Add bookmark note</h3>
+            <p className="text-xs text-muted-foreground mt-1">Saved at {formatTime(currentTime)}</p>
+
+            <label className="block text-xs text-muted-foreground mt-4">
+              Note
+              <textarea
+                value={bookmarkNote}
+                onChange={(e) => setBookmarkNote(e.target.value)}
+                rows={3}
+                maxLength={200}
+                placeholder="What stood out here?"
+                className="mt-1 w-full rounded-lg bg-secondary border border-border/60 px-3 py-2 text-sm text-foreground"
+              />
+            </label>
+
+            <div className="mt-4">
+              <p className="text-xs text-muted-foreground mb-2">Color</p>
+              <div className="flex flex-wrap gap-2">
+                {HIGHLIGHT_COLORS.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setBookmarkColor(color)}
+                    className="tap-target w-8 h-8 rounded-full border border-border/60 flex items-center justify-center"
+                    style={{ backgroundColor: color }}
+                    aria-label={`Select highlight color ${color}`}
+                  >
+                    {bookmarkColor === color ? <Check className="w-4 h-4 text-white" /> : <Circle className="w-3 h-3 text-white/70" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setIsHighlightModalOpen(false)}
+                className="tap-target rounded-lg bg-secondary px-3 py-2 text-sm text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveBookmarkHighlight}
+                disabled={isSavingHighlight || !bookmarkNote.trim()}
+                className="tap-target rounded-lg bg-primary text-primary-foreground px-3 py-2 text-sm font-semibold disabled:opacity-60"
+              >
+                {isSavingHighlight ? "Saving..." : "Save highlight"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {expanded && (
         <div className="border-t border-border/60 bg-card/95 backdrop-blur-xl p-4 md:p-5 max-h-[55vh] overflow-y-auto">
           <div className="max-w-5xl mx-auto grid md:grid-cols-[180px_1fr] gap-5">
@@ -216,7 +298,7 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <button
-                  onClick={addBookmark}
+                  onClick={openBookmarkModal}
                   className="tap-target inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   aria-label="Add bookmark at current position"
                 >
@@ -233,23 +315,29 @@ const CustomAudioPlayer = ({ item, audioRef, isPlaying }: CustomAudioPlayerProps
                 </button>
               </div>
 
-              {bookmarks.length > 0 && (
+              {highlights.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Bookmarks</p>
-                  <div className="flex flex-wrap gap-2">
-                    {bookmarks.map((bm) => (
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Highlights</p>
+                  <div className="space-y-2">
+                    {highlights.map((highlight) => (
                       <button
-                        key={bm}
+                        key={`${highlight.id ?? `${highlight.timestamp}-${highlight.createdAt}`}`}
                         onClick={() => {
                           if (audioRef.current) {
-                            audioRef.current.currentTime = bm;
+                            audioRef.current.currentTime = highlight.timestamp;
                             void audioRef.current.play();
                           }
                         }}
-                        className="tap-target rounded-md bg-secondary/60 px-2.5 py-1.5 text-xs text-foreground hover:bg-secondary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background"
-                        aria-label={`Jump to bookmark at ${formatTime(bm)}`}
+                        className="w-full tap-target rounded-lg bg-secondary/55 px-3 py-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                        aria-label={`Jump to highlight at ${formatTime(highlight.timestamp)}`}
                       >
-                        {formatTime(bm)}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm text-foreground truncate">{highlight.note}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{formatTime(highlight.timestamp)}</p>
+                          </div>
+                          <span className="w-3 h-3 rounded-full border border-white/40" style={{ backgroundColor: highlight.color }} />
+                        </div>
                       </button>
                     ))}
                   </div>
