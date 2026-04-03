@@ -6,6 +6,7 @@ import Player from "./pages/Player.tsx";
 import BookDetail from "./pages/BookDetail.tsx";
 import Downloads from "./pages/Downloads.tsx";
 import Login from "./pages/Login.tsx";
+import Signup from "./pages/Signup.tsx";
 import Profile from "./pages/Profile.tsx";
 import SidebarPlaceholder from "./pages/SidebarPlaceholder.tsx";
 import Library from "./pages/Library.tsx";
@@ -33,6 +34,7 @@ const App = () => (
       <Route path="/player/:id" element={<Player />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </BrowserRouter>
