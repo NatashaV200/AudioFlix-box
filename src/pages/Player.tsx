@@ -137,7 +137,17 @@ const Player = () => {
 
     const positionKey = `audioflix-position-seconds-${item.id}`;
     const progressKey = `audioflix-progress-${item.id}`;
+    const dailyListeningKey = "audioflix-daily-listening-seconds";
     let lastGenrePreferenceUpdateSecond = -1;
+    let lastTrackedSecond = -1;
+
+    const todayKey = () => {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    };
 
     const onLoadedMetadata = () => {
       const storedPosition = Number(localStorage.getItem(positionKey) ?? "0");
@@ -156,12 +166,28 @@ const Player = () => {
       const t = mediaElement.currentTime || 0;
       if (!Number.isFinite(d) || d <= 0) return;
 
+      const currentSecond = Math.floor(t);
+
+      if (lastTrackedSecond >= 0) {
+        const delta = currentSecond - lastTrackedSecond;
+        if (delta > 0 && delta <= 30) {
+          try {
+            const map = JSON.parse(localStorage.getItem(dailyListeningKey) ?? "{}") as Record<string, number>;
+            const day = todayKey();
+            map[day] = Math.max(0, Math.floor((map[day] ?? 0) + delta));
+            localStorage.setItem(dailyListeningKey, JSON.stringify(map));
+          } catch {
+            // ignore storage parse errors
+          }
+        }
+      }
+      lastTrackedSecond = currentSecond;
+
       localStorage.setItem(positionKey, String(Math.floor(t)));
       const progress = Math.max(0, Math.min(Math.floor((t / d) * 100), 100));
       localStorage.setItem(progressKey, String(progress));
       localStorage.setItem(`audioflix-last-played-${item.id}`, String(Date.now()));
 
-      const currentSecond = Math.floor(t);
       if (item.genre && currentSecond > 0 && currentSecond % 15 === 0 && currentSecond !== lastGenrePreferenceUpdateSecond) {
         lastGenrePreferenceUpdateSecond = currentSecond;
         try {
