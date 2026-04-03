@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
 import Footer from "@/components/layout/Footer";
@@ -19,6 +19,7 @@ interface CoListener {
 
 const Player = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const item = contentData.find((c) => c.id === id);
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -141,6 +142,9 @@ const Player = () => {
     let lastGenrePreferenceUpdateSecond = -1;
     let lastTrackedSecond = -1;
 
+    const queryStart = Number(searchParams.get("t") ?? "0");
+    const shouldAutoplay = searchParams.get("autoplay") === "1";
+
     const todayKey = () => {
       const now = new Date();
       const y = now.getFullYear();
@@ -150,9 +154,19 @@ const Player = () => {
     };
 
     const onLoadedMetadata = () => {
-      const storedPosition = Number(localStorage.getItem(positionKey) ?? "0");
-      if (storedPosition > 0 && Number.isFinite(storedPosition)) {
-        mediaElement.currentTime = Math.min(storedPosition, mediaElement.duration || storedPosition);
+      if (Number.isFinite(queryStart) && queryStart > 0) {
+        mediaElement.currentTime = Math.min(queryStart, mediaElement.duration || queryStart);
+      } else {
+        const storedPosition = Number(localStorage.getItem(positionKey) ?? "0");
+        if (storedPosition > 0 && Number.isFinite(storedPosition)) {
+          mediaElement.currentTime = Math.min(storedPosition, mediaElement.duration || storedPosition);
+        }
+      }
+
+      if (shouldAutoplay) {
+        void mediaElement.play().catch(() => {
+          // autoplay may be blocked by browser policy
+        });
       }
 
       const storedProgress = Number(localStorage.getItem(progressKey) ?? "0");
@@ -220,7 +234,7 @@ const Player = () => {
       mediaElement.removeEventListener("timeupdate", onTimeUpdate);
       mediaElement.removeEventListener("ended", onEnded);
     };
-  }, [item]);
+  }, [item, searchParams]);
 
   useEffect(() => {
     return () => {
