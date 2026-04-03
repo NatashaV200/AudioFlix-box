@@ -21,6 +21,7 @@ const Player = () => {
   const { id } = useParams<{ id: string }>();
   const item = contentData.find((c) => c.id === id);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -29,6 +30,7 @@ const Player = () => {
   const [hasReacted, setHasReacted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioEnergy, setAudioEnergy] = useState(0.12);
+  const [resumeProgress, setResumeProgress] = useState(0);
   const [coListeners, setCoListeners] = useState<CoListener[]>([
     { id: "user-2", name: "Alex", avatar: "🎵", color: "#ec4899" },
     { id: "user-3", name: "Jordan", avatar: "🎧", color: "#a855f7" },
@@ -128,6 +130,57 @@ const Player = () => {
   }, [item]);
 
   useEffect(() => {
+    if (!item) return;
+
+    const mediaElement = item.type === "audio" ? audioRef.current : videoRef.current;
+    if (!mediaElement) return;
+
+    const positionKey = `audioflix-position-seconds-${item.id}`;
+    const progressKey = `audioflix-progress-${item.id}`;
+
+    const onLoadedMetadata = () => {
+      const storedPosition = Number(localStorage.getItem(positionKey) ?? "0");
+      if (storedPosition > 0 && Number.isFinite(storedPosition)) {
+        mediaElement.currentTime = Math.min(storedPosition, mediaElement.duration || storedPosition);
+      }
+
+      const storedProgress = Number(localStorage.getItem(progressKey) ?? "0");
+      if (Number.isFinite(storedProgress)) {
+        setResumeProgress(Math.max(0, Math.min(Math.floor(storedProgress), 100)));
+      }
+    };
+
+    const onTimeUpdate = () => {
+      const d = mediaElement.duration || 0;
+      const t = mediaElement.currentTime || 0;
+      if (!Number.isFinite(d) || d <= 0) return;
+
+      localStorage.setItem(positionKey, String(Math.floor(t)));
+      const progress = Math.max(0, Math.min(Math.floor((t / d) * 100), 100));
+      localStorage.setItem(progressKey, String(progress));
+      setResumeProgress(progress);
+    };
+
+    const onEnded = () => {
+      localStorage.setItem(positionKey, "0");
+      localStorage.setItem(progressKey, "100");
+      setResumeProgress(100);
+    };
+
+    mediaElement.addEventListener("loadedmetadata", onLoadedMetadata);
+    mediaElement.addEventListener("timeupdate", onTimeUpdate);
+    mediaElement.addEventListener("ended", onEnded);
+
+    onLoadedMetadata();
+
+    return () => {
+      mediaElement.removeEventListener("loadedmetadata", onLoadedMetadata);
+      mediaElement.removeEventListener("timeupdate", onTimeUpdate);
+      mediaElement.removeEventListener("ended", onEnded);
+    };
+  }, [item]);
+
+  useEffect(() => {
     return () => {
       if (frameRef.current) {
         cancelAnimationFrame(frameRef.current);
@@ -192,6 +245,7 @@ const Player = () => {
         <div className="rounded-2xl overflow-hidden bg-card border border-border/50 card-shine">
           {item.type === "video" ? (
             <video
+              ref={videoRef}
               controls
               className="w-full aspect-video bg-muted"
               poster={item.thumbnail}
@@ -281,6 +335,9 @@ const Player = () => {
                 {item.genre}
               </span>
             )}
+            <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground">
+              Progress {resumeProgress}%
+            </span>
           </div>
 
           {/* Soundwave Reaction */}
