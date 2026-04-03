@@ -9,12 +9,14 @@ import {
   Compass,
   Heart,
   History,
+  PlayCircle,
   Settings,
 } from "lucide-react";
 
 const navItems = [
   { to: "/", label: "Home", icon: House },
   { to: "/library", label: "Library", icon: Library },
+  { to: "/continue", label: "Continue Listening", icon: PlayCircle },
   { to: "/downloads", label: "Downloads", icon: Download },
   { to: "/explore", label: "Explore", icon: Compass },
   { to: "/wishlist", label: "Wishlist", icon: Heart },

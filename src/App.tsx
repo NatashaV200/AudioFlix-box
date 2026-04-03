@@ -20,6 +20,7 @@ const App = () => (
       <Route path="/search" element={<Search />} />
       <Route path="/explore" element={<Search />} />
       <Route path="/library" element={<Library />} />
+      <Route path="/continue" element={<Library initialTab="continue" />} />
       <Route path="/downloads" element={<Downloads />} />
       <Route path="/wishlist" element={<Library initialTab="wishlist" />} />
       <Route
