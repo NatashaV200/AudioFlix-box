@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Menu, X, Bell, Moon, Sun, User, Crown, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -10,9 +10,11 @@ interface NavbarProps {
 
 const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: NavbarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [globalQuery, setGlobalQuery] = useState("");
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
     return localStorage.getItem("audioflix-theme") !== "light";
@@ -22,6 +24,18 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
     document.documentElement.classList.toggle("light", !isDarkMode);
     localStorage.setItem("audioflix-theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
+
+  useEffect(() => {
+    setGlobalQuery(searchValue);
+  }, [searchValue]);
+
+  const submitGlobalSearch = () => {
+    const q = (onSearchChange ? searchValue : globalQuery).trim();
+    if (!q) return;
+    navigate(`/search?query=${encodeURIComponent(q)}`);
+    setSearchOpen(false);
+    setMobileOpen(false);
+  };
 
   const links = [
     { to: "/", label: "Home" },
@@ -67,16 +81,32 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
                 <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <input
                   type="text"
-                  placeholder="Search titles, genres..."
-                  value={searchValue}
-                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  placeholder="Search by title or genre..."
+                  value={onSearchChange ? searchValue : globalQuery}
+                  onChange={(e) => {
+                    if (onSearchChange) {
+                      onSearchChange(e.target.value);
+                    } else {
+                      setGlobalQuery(e.target.value);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      submitGlobalSearch();
+                    }
+                  }}
                   className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-full"
                   autoFocus
                 />
                 <button
                   onClick={() => {
                     setSearchOpen(false);
-                    onSearchChange?.("");
+                    if (onSearchChange) {
+                      onSearchChange("");
+                    } else {
+                      setGlobalQuery("");
+                    }
                   }}
                 >
                   <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
@@ -187,9 +217,21 @@ const Navbar = ({ onSearchChange, showSearch = false, searchValue = "" }: Navbar
               <Search className="w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search..."
-                value={searchValue}
-                onChange={(e) => onSearchChange?.(e.target.value)}
+                placeholder="Search by title or genre..."
+                value={onSearchChange ? searchValue : globalQuery}
+                onChange={(e) => {
+                  if (onSearchChange) {
+                    onSearchChange(e.target.value);
+                  } else {
+                    setGlobalQuery(e.target.value);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    submitGlobalSearch();
+                  }
+                }}
                 className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-full"
               />
             </div>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search as SearchIcon, SlidersHorizontal, X } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
 import Footer from "@/components/layout/Footer";
@@ -41,6 +42,7 @@ const narrators = [
 const languages = ["English", "Spanish", "French", "German", "Hindi"];
 
 const Search = () => {
+  const [searchParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -94,7 +96,6 @@ const Search = () => {
     const s = new Set<string>();
     audiobooks.forEach((item) => {
       if (item.title.toLowerCase().includes(q)) s.add(item.title);
-      if (item.narrator.toLowerCase().includes(q)) s.add(item.narrator);
       if (item.genre?.toLowerCase().includes(q)) s.add(item.genre);
     });
 
@@ -107,9 +108,7 @@ const Search = () => {
       const matchesQuery =
         q.length === 0 ||
         item.title.toLowerCase().includes(q) ||
-        item.narrator.toLowerCase().includes(q) ||
-        item.genre?.toLowerCase().includes(q) ||
-        item.language.toLowerCase().includes(q);
+        item.genre?.toLowerCase().includes(q);
 
       const matchesGenre = genre === "all" || item.genre === genre;
       const matchesNarrator = narrator === "all" || item.narrator === narrator;
@@ -127,6 +126,11 @@ const Search = () => {
       );
     });
   }, [audiobooks, query, genre, narrator, language, rating, minDuration, maxDuration]);
+
+  useEffect(() => {
+    const q = searchParams.get("query")?.trim() ?? "";
+    setQuery(q);
+  }, [searchParams]);
 
   useEffect(() => {
     setVisibleCount(18);
@@ -170,7 +174,7 @@ const Search = () => {
                   }}
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 120)}
-                  placeholder="Search by title, narrator, genre, language..."
+                  placeholder="Search by title or genre..."
                   className="w-full bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
                 />
                 {query && (
